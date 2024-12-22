@@ -1,0 +1,12 @@
+<h1 class="cart-title">Sepet</h1>
+<div class="cart">
+  <div *ngIf="cartItems$ | async as cartItems">
+    @if(cartItems.length > 0) { @for (item of cartItems$ | async; track $index)
+    {
+    <app-card-cart-item [item]="item"></app-card-cart-item>
+    <p>Toplam Tutar: {{ total$ | async }} TL</p>
+    } } @else {
+    <div>Sepetinizde ürün bulunmamaktadır.</div>
+    }
+  </div>
+</div>

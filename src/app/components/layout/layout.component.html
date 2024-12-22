@@ -1,0 +1,55 @@
+<div class="shopping-layout">
+  <a [routerLink]="''">
+    <img
+      class="brand-logo"
+      [src]="
+        'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZPgjKgzhvqV-4NqDXc65NuGfaKqDfP0HuRA&s'
+      "
+      alt="migros-shopping"
+    />
+  </a>
+  @if(!hideCartFromLayout) {
+  <div class="cart-badge-wrapper">
+    <a
+      class="cart-badge-area"
+      (mouseenter)="showBox()"
+      (mouseleave)="hideBox()"
+      [routerLink]="'cart'"
+      [class.cart-open]="showCartSummaryBox"
+    >
+      <img
+        class="cart-icon"
+        [src]="'https://www.migros.com.tr/assets/icons/cart.svg'"
+        [alt]="'migros-icon'"
+      />
+      <div class="cart-info">
+        <div>Sepetim</div>
+        <div>{{ total$ | async }} TL</div>
+      </div>
+      <div *ngIf="totalCount$ | async as totalCount" class="cart-count-badge">
+        <div *ngIf="totalCount > 0">
+          {{ totalCount }}
+        </div>
+      </div>
+    </a>
+    @if(showCartSummaryBox) {
+    <div
+      class="cart-summary-wrapper"
+      (mouseenter)="showBox()"
+      (mouseleave)="hideBox()"
+    >
+      <div class="cart-summary">
+        <div *ngIf="cartItems$ | async as cartItems">
+          @if(cartItems.length > 0) { @for (item of cartItems$ | async; track
+          $index) {
+          <app-card-cart-item [item]="item"></app-card-cart-item>
+          } } @else {
+          <div>Sepetinizde ürün bulunmamaktadır.</div>
+          }
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+  }
+</div>

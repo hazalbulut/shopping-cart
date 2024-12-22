@@ -1,0 +1,36 @@
+<h1 class="product-title">Ürün Listesi</h1>
+<div class="product-list">
+  @for (product of products$ | async; track $index) {
+  <div class="product">
+    <h3 class="product-name">{{ product.name }}</h3>
+    <p class="product-info-item">Fiyat: {{ product.price }} TL</p>
+    <p class="product-info-item">Stok: {{ product.stock }}</p>
+
+    <ng-template #addToCartButton>
+      <button (click)="addToCart(product)" class="add-to-cart-button">
+        Sepete Ekle
+      </button>
+    </ng-template>
+
+    <ng-container *ngIf="isInCart(product.id); else addToCartButton">
+      <div class="quantity-controls">
+        <button
+          class="quantity-control"
+          (click)="decrementQuantity(product.id)"
+        >
+          -
+        </button>
+        <span>{{ getProductQuantity(product.id) }}</span>
+        <button
+          class="quantity-control"
+          (click)="incrementQuantity(product.id)"
+          [disabled]="!isStockAvailable(product.id)"
+          [class.disable]="!isStockAvailable(product.id)"
+        >
+          +
+        </button>
+      </div>
+    </ng-container>
+  </div>
+  }
+</div>
