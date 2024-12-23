@@ -4,12 +4,11 @@ This is a shopping cart app built with Angular that uses NGXS for state manageme
 
 ## Tech Stack
 
-**Framework Version:** Angular 19.0.6
-**Node:** 18.20.5
-**State Management:** NGXS
-**Testing:** Jasmine, Karma
-**Routing:** Angular Router
-**Styling:** SCSS
+- **Framework Version:** Angular 19.0.6
+- **Node:** 18.20.5
+- **State Management:** NGXS
+- **Testing:** Jasmine, Karma
+- **Styling:** SCSS
 
 ## Development server
 
