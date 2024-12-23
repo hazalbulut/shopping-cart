@@ -11,6 +11,7 @@ import {
   IncrementQuantity,
 } from '../../state/cart/cart.actions';
 import { ICartItem } from '../../models/cart-item.interface';
+import { ICombinedProduct } from '../../models/combined-product.interface';
 
 @Component({
   selector: 'app-product-list',
@@ -24,13 +25,7 @@ export class ProductListComponent implements OnInit {
   public cartItems$: Observable<ICartItem[]> = new Observable<ICartItem[]>();
   public productCount: number = 0;
   public productInCart: { [productId: number]: boolean } = {};
-  public combinedProduct$: Observable<
-    {
-      product: IProduct;
-      isInCart: boolean;
-      quantity: number;
-    }[]
-  > = new Observable();
+  public combinedProduct$: Observable<ICombinedProduct[]> = new Observable();
 
   private readonly store = inject(Store);
 
