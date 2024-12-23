@@ -10,13 +10,14 @@ import {
   IncrementQuantity,
 } from '../../state/cart.state';
 import { ProductState } from '../../state/product.state';
+import { LayoutComponent } from '../../components/layout/layout.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss',
-  imports: [AsyncPipe, NgIf],
+  imports: [AsyncPipe, NgIf, LayoutComponent],
 })
 export class ProductListComponent implements OnInit {
   public products$: Observable<IProduct[]> = new Observable<IProduct[]>();

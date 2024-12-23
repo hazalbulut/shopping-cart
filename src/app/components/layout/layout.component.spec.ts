@@ -12,7 +12,6 @@ describe('LayoutComponent', () => {
   let fixture: ComponentFixture<LayoutComponent>;
   let mockData: any;
   let mockRouter: any;
-  let mockActivatedRoute: any;
   beforeEach(async () => {
     mockData = {
       select: jasmine.createSpy().and.callFake((item) => {
@@ -47,18 +46,17 @@ describe('LayoutComponent', () => {
       serializeUrl: jasmine.createSpy().and.returnValue('mock-url'),
     };
 
-    mockActivatedRoute = {
-      firstChild: {
-        data: of({ hideCartFromLayout: false }),
-      },
-    };
-
     await TestBed.configureTestingModule({
       imports: [LayoutComponent, CardCartItemComponent],
       providers: [
         { provide: Store, useValue: mockData },
         { provide: Router, useValue: mockRouter },
-        { provide: ActivatedRoute, useValue: mockActivatedRoute },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { params: {} },
+          },
+        },
       ],
     }).compileComponents();
   });
@@ -108,5 +106,12 @@ describe('LayoutComponent', () => {
     badge.triggerEventHandler('mouseleave', {});
     fixture.detectChanges();
     expect(component.showCartSummaryBox).toBeFalse();
+  });
+
+  it('should show page content', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
+    fixture.nativeElement.innerHTML = `<app-layout><p>Test Content</p></app-layout>`;
+    fixture.detectChanges();
+    expect(compiled.querySelector('p')?.textContent).toContain('Test Content');
   });
 });

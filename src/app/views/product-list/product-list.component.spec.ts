@@ -1,16 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductListComponent } from './product-list.component';
 import { Store } from '@ngxs/store';
-import { of } from 'rxjs';
+import { of, Subject, takeUntil } from 'rxjs';
 import { AddToCart, CartState } from '../../state/cart.state';
 import { ProductState } from '../../state/product.state';
+import { ActivatedRoute } from '@angular/router';
 
 describe('ProductListComponent', () => {
   let component: ProductListComponent;
   let fixture: ComponentFixture<ProductListComponent>;
   let mockData: any;
-
+  let destroy$: Subject<void>;
   beforeEach(async () => {
+    destroy$ = new Subject<void>();
     mockData = {
       select: jasmine.createSpy().and.callFake((item) => {
         if (item === CartState.getCartItems) {
@@ -48,8 +50,19 @@ describe('ProductListComponent', () => {
           provide: Store,
           useValue: mockData,
         },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { params: {} },
+          },
+        },
       ],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    destroy$.next();
+    destroy$.complete();
   });
 
   beforeEach(() => {
@@ -64,7 +77,7 @@ describe('ProductListComponent', () => {
 
   it('should display products', (done: DoneFn) => {
     component.ngOnInit();
-    component.products$.subscribe((products) => {
+    component.products$.pipe(takeUntil(destroy$)).subscribe((products) => {
       expect(products.length).toBe(2);
       expect(products[0].name).toBe('Laptop');
       expect(products[1].name).toBe('Mouse');

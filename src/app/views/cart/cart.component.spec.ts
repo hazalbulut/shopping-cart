@@ -1,17 +1,20 @@
-import { of } from 'rxjs';
+import { of, Subject, takeUntil } from 'rxjs';
 import { CartState } from '../../state/cart.state';
 import { ProductState } from '../../state/product.state';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CartComponent } from './cart.component';
 import { CardCartItemComponent } from '../../components/card-cart-item/card-cart-item.component';
 import { Store } from '@ngxs/store';
+import { ActivatedRoute } from '@angular/router';
 
 describe('CartComponent', () => {
   let component: CartComponent;
   let fixture: ComponentFixture<CartComponent>;
   let mockData: any;
+  let destroy$: Subject<void>;
 
   beforeEach(async () => {
+    destroy$ = new Subject<void>();
     mockData = {
       select: jasmine.createSpy().and.callFake((item) => {
         if (item === CartState.getCartItems) {
@@ -49,8 +52,19 @@ describe('CartComponent', () => {
           provide: Store,
           useValue: mockData,
         },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { params: {} },
+          },
+        },
       ],
     }).compileComponents();
+  });
+
+  afterEach(() => {
+    destroy$.next();
+    destroy$.complete();
   });
 
   beforeEach(() => {
@@ -65,7 +79,7 @@ describe('CartComponent', () => {
 
   it('should display cart items', (done: DoneFn) => {
     component.ngOnInit();
-    component.cartItems$.subscribe((items) => {
+    component.cartItems$.pipe(takeUntil(destroy$)).subscribe((items) => {
       expect(items.length).toBe(1);
       expect(items[0].name).toBe('Laptop');
       expect(items[0].price).toBe(1000);
@@ -75,7 +89,7 @@ describe('CartComponent', () => {
 
   it('should display total price', (done: DoneFn) => {
     component.ngOnInit();
-    component.total$.subscribe((item) => {
+    component.total$.pipe(takeUntil(destroy$)).subscribe((item) => {
       expect(item).toBe(1000);
       done();
     });

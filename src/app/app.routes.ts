@@ -7,6 +7,5 @@ export const routes: Routes = [
     path: 'cart',
     loadComponent: () =>
       import('./views/cart/cart.component').then((m) => m.CartComponent),
-    data: { hideCartFromLayout: true },
   },
 ];
