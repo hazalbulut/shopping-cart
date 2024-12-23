@@ -3,7 +3,7 @@ import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { ICartItem } from '../../models/cart-item.interface';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { CartState } from '../../state/cart.state';
+import { CartState } from '../../state/cart/cart.state';
 import { CardCartItemComponent } from '../../components/card-cart-item/card-cart-item.component';
 import { LayoutComponent } from '../../components/layout/layout.component';
 
@@ -17,6 +17,7 @@ import { LayoutComponent } from '../../components/layout/layout.component';
 export class CartComponent implements OnInit {
   public cartItems$: Observable<ICartItem[]> = new Observable<ICartItem[]>();
   public total$: Observable<number> = new Observable<number>();
+
   private readonly store = inject(Store);
 
   ngOnInit(): void {

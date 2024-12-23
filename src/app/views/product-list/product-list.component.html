@@ -1,37 +1,35 @@
 <app-layout>
   <h1 class="product-title">Ürün Listesi</h1>
   <div class="product-list">
-    @for (product of products$ | async; track $index) {
+    @for (item of combinedProduct$ | async; track $index) {
     <div class="product">
-      <h3 class="product-name">{{ product.name }}</h3>
-      <p class="product-info-item">Fiyat: {{ product.price }} TL</p>
-      <p class="product-info-item">Stok: {{ product.stock }}</p>
+      <h3 class="product-name">{{ item.product.name }}</h3>
+      <p class="product-info-item">Fiyat: {{ item.product.price }} TL</p>
+      <p class="product-info-item">Stok: {{ item.product.stock }}</p>
 
-      <ng-template #addToCartButton>
-        <button (click)="addToCart(product)" class="add-to-cart-button">
-          Sepete Ekle
+      @if(item.isInCart) {
+      <div class="quantity-controls">
+        <button
+          class="quantity-control"
+          (click)="decrementQuantity(item.product.id)"
+        >
+          -
         </button>
-      </ng-template>
-
-      <ng-container *ngIf="isInCart(product.id); else addToCartButton">
-        <div class="quantity-controls">
-          <button
-            class="quantity-control"
-            (click)="decrementQuantity(product.id)"
-          >
-            -
-          </button>
-          <span>{{ getProductQuantity(product.id) }}</span>
-          <button
-            class="quantity-control"
-            (click)="incrementQuantity(product.id)"
-            [disabled]="!isStockAvailable(product.id)"
-            [class.disable]="!isStockAvailable(product.id)"
-          >
-            +
-          </button>
-        </div>
-      </ng-container>
+        <span>{{ item.quantity }}</span>
+        <button
+          class="quantity-control"
+          (click)="incrementQuantity(item.product.id)"
+          [disabled]="item.product.stock === item.quantity"
+          [class.disable]="item.product.stock === item.quantity"
+        >
+          +
+        </button>
+      </div>
+      } @else {
+      <button (click)="addToCart(item.product)" class="add-to-cart-button">
+        Sepete Ekle
+      </button>
+      }
     </div>
     }
   </div>

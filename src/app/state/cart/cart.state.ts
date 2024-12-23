@@ -1,27 +1,12 @@
 import { State, Action, StateContext, Selector } from '@ngxs/store';
 import { Injectable } from '@angular/core';
-import { ICartItem } from '../models/cart-item.interface';
-import { ICartState } from '../models/cart-state.interface';
-
-export class AddToCart {
-  static readonly type = '[Cart] Add';
-  constructor(public payload: ICartItem) {}
-}
-
-export class RemoveFromCart {
-  static readonly type = '[Cart] Remove';
-  constructor(public payload: number) {}
-}
-
-export class IncrementQuantity {
-  static readonly type = '[Cart] Increment Quantity';
-  constructor(public productId: number) {}
-}
-
-export class DecrementQuantity {
-  static readonly type = '[Cart] Decrement Quantity';
-  constructor(public productId: number) {}
-}
+import { ICartState } from '../../models/cart-state.interface';
+import {
+  AddToCart,
+  DecrementQuantity,
+  IncrementQuantity,
+  RemoveFromCart,
+} from './cart.actions';
 
 @State<ICartState>({
   name: 'cart',
@@ -33,12 +18,11 @@ export class DecrementQuantity {
 export class CartState {
   @Selector()
   static getCartItems(state: ICartState) {
-    return state.items;
+    return state?.items ?? [];
   }
-
   @Selector()
   static getTotalPrice(state: ICartState) {
-    return state.items.reduce(
+    return state?.items.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
@@ -46,7 +30,7 @@ export class CartState {
 
   @Selector()
   static getTotalItemsCount(state: ICartState): number {
-    return state.items.reduce((total, item) => total + item.quantity, 0);
+    return state?.items.reduce((total, item) => total + item.quantity, 0);
   }
 
   @Action(AddToCart)
@@ -55,13 +39,13 @@ export class CartState {
     { payload }: AddToCart
   ) {
     const state = getState();
-    const existingItem = state.items.find(
+    const existingItem = state?.items.find(
       (item) => item.productId === payload.productId
     );
 
     if (existingItem) {
       patchState({
-        items: state.items.map((item) =>
+        items: state?.items.map((item) =>
           item.productId === payload.productId
             ? { ...item, quantity: item.quantity + 1 }
             : item
@@ -77,10 +61,10 @@ export class CartState {
   @Action(RemoveFromCart)
   removeFromCart(
     { getState, patchState }: StateContext<ICartState>,
-    { payload }: RemoveFromCart
+    { productId }: RemoveFromCart
   ) {
     patchState({
-      items: getState().items.filter((item) => item.productId !== payload),
+      items: getState()?.items.filter((item) => item.productId !== productId),
     });
   }
 
@@ -91,7 +75,7 @@ export class CartState {
   ) {
     const state = getState();
     patchState({
-      items: state.items.map((item) =>
+      items: state?.items.map((item) =>
         item.productId === productId
           ? { ...item, quantity: item.quantity + 1 }
           : item
@@ -106,7 +90,7 @@ export class CartState {
   ) {
     const state = getState();
     patchState({
-      items: state.items
+      items: state?.items
         .map((item) =>
           item.productId === productId
             ? { ...item, quantity: item.quantity - 1 }

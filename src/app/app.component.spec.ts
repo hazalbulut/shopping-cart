@@ -1,6 +1,5 @@
 import { TestBed } from '@angular/core/testing';
 import { AppComponent } from './app.component';
-import { ActivatedRoute } from '@angular/router';
 import { Store } from '@ngxs/store';
 import { of } from 'rxjs';
 
@@ -23,22 +22,6 @@ describe('AppComponent', () => {
               return of([]);
             }),
             dispatch: jasmine.createSpy(),
-          },
-        },
-        {
-          provide: ActivatedRoute,
-          useValue: {
-            snapshot: {
-              params: {
-                id: '123',
-              },
-              data: {
-                someData: 'test-data',
-              },
-            },
-            paramMap: of({
-              get: (key: string) => (key === 'id' ? '123' : null),
-            }),
           },
         },
       ],

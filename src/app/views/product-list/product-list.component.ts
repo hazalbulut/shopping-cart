@@ -1,31 +1,41 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe } from '@angular/common';
 import { IProduct } from '../../models/product.interface';
+import { ProductState } from '../../state/product/product.state';
+import { LayoutComponent } from '../../components/layout/layout.component';
 import {
   AddToCart,
-  CartState,
   DecrementQuantity,
   IncrementQuantity,
-} from '../../state/cart.state';
-import { ProductState } from '../../state/product.state';
-import { LayoutComponent } from '../../components/layout/layout.component';
+} from '../../state/cart/cart.actions';
+import { ICartItem } from '../../models/cart-item.interface';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.scss',
-  imports: [AsyncPipe, NgIf, LayoutComponent],
+  imports: [AsyncPipe, LayoutComponent],
 })
 export class ProductListComponent implements OnInit {
   public products$: Observable<IProduct[]> = new Observable<IProduct[]>();
+  public cartItems$: Observable<ICartItem[]> = new Observable<ICartItem[]>();
   public productCount: number = 0;
+  public productInCart: { [productId: number]: boolean } = {};
+  public combinedProduct$: Observable<
+    {
+      product: IProduct;
+      isInCart: boolean;
+      quantity: number;
+    }[]
+  > = new Observable();
+
   private readonly store = inject(Store);
 
   ngOnInit(): void {
-    this.products$ = this.store.select(ProductState.getProducts);
+    this.combinedProduct$ = this.store.select(ProductState.getCombinedProducts);
   }
 
   addToCart(product: any) {
@@ -48,29 +58,5 @@ export class ProductListComponent implements OnInit {
 
   decrementQuantity(productId: number) {
     this.store.dispatch(new DecrementQuantity(productId));
-  }
-
-  isInCart(productId: number): boolean {
-    const cartItems = this.store.selectSnapshot(CartState.getCartItems);
-    return !!cartItems?.find((item) => item.productId === productId);
-  }
-
-  getProductQuantity(productId: number): number {
-    const cartItems = this.store.selectSnapshot(CartState.getCartItems);
-    const item = cartItems.find((item) => item.productId === productId);
-    return item ? item.quantity : 0;
-  }
-
-  isStockAvailable(productId: number): boolean {
-    const selectedProduct = this.store
-      .selectSnapshot(ProductState.getProducts)
-      .find((p: any) => p.id === productId);
-    const cartItems = this.store.selectSnapshot(CartState.getCartItems);
-    const cartItem = cartItems.find((item) => item.productId === productId);
-
-    if (selectedProduct && cartItem) {
-      return cartItem.quantity < selectedProduct.stock;
-    }
-    return true;
   }
 }

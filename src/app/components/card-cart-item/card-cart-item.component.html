@@ -1,21 +1,21 @@
+@if(selectedProduct){
 <div class="cart-item">
   <span>
     {{ item.name }} &nbsp;<span>x&nbsp;{{ item.quantity }}</span>
   </span>
   <p>{{ item.quantity * item.price }} TL</p>
   <div class="quantity-controls">
-    <button (click)="decrementQuantity(item.productId)">-</button>
+    <button (click)="decrementQuantity()">-</button>
     <span>{{ item ? item.quantity : 0 }}</span>
     <button
       class="quantity-control"
-      (click)="incrementQuantity(item.productId)"
-      [disabled]="!isStockAvailable(item)"
-      [class.disable]="!isStockAvailable(item)"
+      (click)="incrementQuantity()"
+      [disabled]="item.quantity === selectedProduct.stock"
+      [class.disable]="item.quantity === selectedProduct.stock"
     >
       +
     </button>
   </div>
-  <button class="remove-button" (click)="removeFromCart(item.productId)">
-    Sil
-  </button>
+  <button class="remove-button" (click)="removeFromCart()">Sil</button>
 </div>
+}

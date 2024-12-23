@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LayoutComponent } from './layout.component';
 import { Store } from '@ngxs/store';
 import { of } from 'rxjs';
-import { CartState } from '../../state/cart.state';
-import { ActivatedRoute, Router } from '@angular/router';
+import { CartState } from '../../state/cart/cart.state';
+import { ActivatedRoute } from '@angular/router';
 import { CardCartItemComponent } from '../card-cart-item/card-cart-item.component';
 import { By } from '@angular/platform-browser';
 
@@ -11,7 +11,6 @@ describe('LayoutComponent', () => {
   let component: LayoutComponent;
   let fixture: ComponentFixture<LayoutComponent>;
   let mockData: any;
-  let mockRouter: any;
   beforeEach(async () => {
     mockData = {
       select: jasmine.createSpy().and.callFake((item) => {
@@ -20,7 +19,8 @@ describe('LayoutComponent', () => {
         }
         if (item === CartState.getCartItems) {
           return of([
-            { productId: 1, name: 'Laptop', price: 1000, quantity: 1 },
+            { id: 1, name: 'Laptop', price: 1000, stock: 5 },
+            { id: 2, name: 'Mouse', price: 50, stock: 2 },
           ]);
         }
         if (item === CartState.getTotalItemsCount) {
@@ -30,7 +30,10 @@ describe('LayoutComponent', () => {
       }),
       selectSnapshot: jasmine.createSpy().and.callFake((selector) => {
         if (selector === CartState.getCartItems) {
-          return [{ productId: 1, name: 'Laptop', price: 1000, quantity: 1 }];
+          return [
+            { id: 1, name: 'Laptop', price: 1000, stock: 5 },
+            { id: 2, name: 'Mouse', price: 50, stock: 2 },
+          ];
         }
         if (selector === CartState.getTotalItemsCount) {
           return 3;
@@ -39,18 +42,10 @@ describe('LayoutComponent', () => {
       }),
     };
 
-    mockRouter = {
-      events: of(),
-      createUrlTree: jasmine.createSpy().and.returnValue({}),
-      navigate: jasmine.createSpy(),
-      serializeUrl: jasmine.createSpy().and.returnValue('mock-url'),
-    };
-
     await TestBed.configureTestingModule({
       imports: [LayoutComponent, CardCartItemComponent],
       providers: [
         { provide: Store, useValue: mockData },
-        { provide: Router, useValue: mockRouter },
         {
           provide: ActivatedRoute,
           useValue: {

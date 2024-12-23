@@ -2,12 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CardCartItemComponent } from './card-cart-item.component';
 import { Store } from '@ngxs/store';
 import {
-  CartState,
   DecrementQuantity,
   IncrementQuantity,
   RemoveFromCart,
-} from '../../state/cart.state';
-import { ProductState } from '../../state/product.state';
+} from '../../state/cart/cart.actions';
+import { ProductState } from '../../state/product/product.state';
 
 describe('CardCartItemComponent', () => {
   let component: CardCartItemComponent;
@@ -17,29 +16,8 @@ describe('CardCartItemComponent', () => {
   beforeEach(async () => {
     mockData = {
       dispatch: jasmine.createSpy(),
-      select: jasmine.createSpy().and.callFake((item) => {
-        if (item === CartState.getCartItems) {
-          return [
-            { productId: 1, name: 'Laptop', price: 1000, quantity: 2 },
-            { productId: 2, name: 'Mouse', price: 50, quantity: 1 },
-          ];
-        }
-        if (item === ProductState.getProducts) {
-          return [
-            { id: 1, name: 'Laptop', price: 1000, stock: 5 },
-            { id: 2, name: 'Mouse', price: 50, stock: 2 },
-          ];
-        }
-        return [];
-      }),
-      selectSnapshot: jasmine.createSpy().and.callFake((item) => {
-        if (item === CartState.getCartItems) {
-          return [
-            { productId: 1, name: 'Laptop', price: 1000, quantity: 2 },
-            { productId: 2, name: 'Mouse', price: 50, quantity: 1 },
-          ];
-        }
-        if (item === ProductState.getProducts) {
+      selectSnapshot: jasmine.createSpy().and.callFake((selector) => {
+        if (selector === ProductState.getProducts) {
           return [
             { id: 1, name: 'Laptop', price: 1000, stock: 5 },
             { id: 2, name: 'Mouse', price: 50, stock: 2 },
@@ -67,80 +45,69 @@ describe('CardCartItemComponent', () => {
     fixture.detectChanges();
   });
 
-  it('should create component', () => {
+  it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display cart item data', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    const nameElement = compiled.querySelector('.cart-item span')!;
-    const totalElement = compiled.querySelector('.cart-item p')!;
-    const nameText = nameElement.textContent?.replace(/\s+/g, ' ').trim(); // Space is fixed for x 2
-    expect(nameElement.textContent).toContain('Laptop');
-    expect(nameText).toContain('x 2');
-    expect(totalElement.textContent).toContain('2000 TL');
+  it('should set selectedProduct on ngOnInit', () => {
+    component.ngOnInit();
+    expect(component.selectedProduct).toEqual({
+      id: 1,
+      name: 'Laptop',
+      price: 1000,
+      stock: 5,
+    });
   });
 
-  it('should increment when + button cliked', () => {
-    const incrementControl = fixture.nativeElement.querySelector(
-      '.quantity-control'
-    ) as HTMLElement;
-    incrementControl.click();
+  it('should dispatch IncrementQuantity action when incrementQuantity called', () => {
+    component.incrementQuantity();
     expect(mockData.dispatch).toHaveBeenCalledWith(new IncrementQuantity(1));
   });
 
-  it('should remove item from cart when remove clicked', () => {
-    // Check alert
+  it('should dispatch DecrementQuantity action when decrementQuantity called', () => {
+    component.decrementQuantity();
+    expect(mockData.dispatch).toHaveBeenCalledWith(new DecrementQuantity(1));
+  });
+
+  it('should dispatch RemoveFromCart action when removeFromCart is called', () => {
     spyOn(window, 'alert');
-    const removeControl = fixture.nativeElement.querySelector(
-      '.remove-button'
-    ) as HTMLElement;
-    removeControl.click();
+    component.removeFromCart();
     expect(mockData.dispatch).toHaveBeenCalledWith(new RemoveFromCart(1));
     expect(window.alert).toHaveBeenCalledWith('Ürün sepetten çıkarıldı.');
   });
 
-  it('should disable if stock unavaliable', () => {
-    component.item = { productId: 2, name: 'Mouse', price: 50, quantity: 2 };
+  it('should disable + button if stock limit reached', () => {
+    component.item.quantity = 5;
     fixture.detectChanges();
 
-    const incrementControl = fixture.nativeElement.querySelector(
+    const incrementButton = fixture.nativeElement.querySelector(
       '.quantity-control'
-    ) as HTMLElement;
-    expect(incrementControl.getAttribute('disabled')).not.toBeNull();
-    expect(incrementControl.classList).toContain('disable');
+    ) as HTMLButtonElement;
+
+    expect(incrementButton.disabled).toBeTrue();
+    expect(incrementButton.classList).toContain('disable');
   });
 
-  it('should decrement when - button clicked', () => {
-    const decrementControl = fixture.nativeElement.querySelector(
-      '.quantity-controls button'
-    ) as HTMLElement;
-    decrementControl.click();
-    expect(mockData.dispatch).toHaveBeenCalledWith(new DecrementQuantity(1));
+  it('should enable + button if stock limit not reached', () => {
+    component.item.quantity = 3; // not out of stock
+    fixture.detectChanges();
+
+    const incrementButton = fixture.nativeElement.querySelector(
+      '.quantity-control'
+    ) as HTMLButtonElement;
+
+    expect(incrementButton.disabled).toBeFalse();
+    expect(incrementButton.classList).not.toContain('disable');
   });
 
-  it('should check product quantity', () => {
-    const productQuantity = component.getProductQuantity(1);
-    expect(productQuantity).toBe(2);
-    const nonExistentQuantity = component.getProductQuantity(3);
-    expect(nonExistentQuantity).toBe(0);
-  });
+  it('should correctly display cart item data in the DOM', () => {
+    const compiled = fixture.nativeElement as HTMLElement;
 
-  it('should check if stock is available', () => {
-    const available = component.isStockAvailable({
-      productId: 1,
-      name: 'Laptop',
-      price: 1000,
-      quantity: 2,
-    });
-    expect(available).toBeTrue();
-
-    const unavailable = component.isStockAvailable({
-      productId: 2,
-      name: 'Mouse',
-      price: 50,
-      quantity: 3,
-    });
-    expect(unavailable).toBeFalse();
+    const nameElement = compiled.querySelector('.cart-item span')!;
+    const totalElement = compiled.querySelector('.cart-item p')!;
+    const nameText = nameElement.textContent?.replace(/\s+/g, ' ').trim(); // fixed space with &nbsp;
+    expect(nameElement.textContent).toContain('Laptop');
+    expect(nameText).toContain('x 2');
+    expect(totalElement.textContent).toContain('2000 TL');
   });
 });

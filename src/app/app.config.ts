@@ -7,8 +7,8 @@ import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
 import { NgxsModule } from '@ngxs/store';
-import { ProductState } from './state/product.state';
-import { CartState } from './state/cart.state';
+import { ProductState } from './state/product/product.state';
+import { CartState } from './state/cart/cart.state';
 
 export const appConfig: ApplicationConfig = {
   providers: [

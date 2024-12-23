@@ -1,44 +1,38 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProductListComponent } from './product-list.component';
 import { Store } from '@ngxs/store';
-import { of, Subject, takeUntil } from 'rxjs';
-import { AddToCart, CartState } from '../../state/cart.state';
-import { ProductState } from '../../state/product.state';
+import { of } from 'rxjs';
+import { ProductState } from '../../state/product/product.state';
 import { ActivatedRoute } from '@angular/router';
+import {
+  AddToCart,
+  IncrementQuantity,
+  DecrementQuantity,
+} from '../../state/cart/cart.actions';
 
 describe('ProductListComponent', () => {
   let component: ProductListComponent;
   let fixture: ComponentFixture<ProductListComponent>;
   let mockData: any;
-  let destroy$: Subject<void>;
+
   beforeEach(async () => {
-    destroy$ = new Subject<void>();
     mockData = {
-      select: jasmine.createSpy().and.callFake((item) => {
-        if (item === CartState.getCartItems) {
+      select: jasmine.createSpy().and.callFake((selector) => {
+        if (selector === ProductState.getCombinedProducts) {
           return of([
-            { productId: 1, name: 'Laptop', price: 1000, quantity: 1 },
-          ]);
-        }
-        if (item === ProductState.getProducts) {
-          return of([
-            { id: 1, name: 'Laptop', price: 1000, stock: 10 },
-            { id: 2, name: 'Mouse', price: 50, stock: 100 },
+            {
+              product: { id: 1, name: 'Laptop', price: 1000, stock: 10 },
+              quantity: 1,
+              isInCart: true,
+            },
+            {
+              product: { id: 2, name: 'Mouse', price: 50, stock: 100 },
+              quantity: 0,
+              isInCart: false,
+            },
           ]);
         }
         return of([]);
-      }),
-      selectSnapshot: jasmine.createSpy().and.callFake((item) => {
-        if (item === CartState.getCartItems) {
-          return [{ productId: 1, name: 'Laptop', price: 1000, quantity: 1 }];
-        }
-        if (item === ProductState.getProducts) {
-          return [
-            { id: 1, name: 'Laptop', price: 1000, stock: 10 },
-            { id: 2, name: 'Mouse', price: 50, stock: 100 },
-          ];
-        }
-        return [];
       }),
       dispatch: jasmine.createSpy(),
     };
@@ -60,11 +54,6 @@ describe('ProductListComponent', () => {
     }).compileComponents();
   });
 
-  afterEach(() => {
-    destroy$.next();
-    destroy$.complete();
-  });
-
   beforeEach(() => {
     fixture = TestBed.createComponent(ProductListComponent);
     component = fixture.componentInstance;
@@ -75,19 +64,24 @@ describe('ProductListComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should display products', (done: DoneFn) => {
-    component.ngOnInit();
-    component.products$.pipe(takeUntil(destroy$)).subscribe((products) => {
-      expect(products.length).toBe(2);
-      expect(products[0].name).toBe('Laptop');
-      expect(products[1].name).toBe('Mouse');
+  it('should display combined products', (done: DoneFn) => {
+    component.combinedProduct$.subscribe((combinedProducts) => {
+      expect(combinedProducts.length).toBe(2);
+      expect(combinedProducts[0].product.name).toBe('Laptop');
+      expect(combinedProducts[0].quantity).toBe(1);
+      expect(combinedProducts[0].isInCart).toBeTrue();
+
+      expect(combinedProducts[1].product.name).toBe('Mouse');
+      expect(combinedProducts[1].quantity).toBe(0);
+      expect(combinedProducts[1].isInCart).toBeFalse();
       done();
     });
   });
 
-  it('should dispatch to AddToCart when add to cart button clicked', () => {
+  it('should dispatch AddToCart action', () => {
     const product = { id: 1, name: 'Laptop', price: 1000, stock: 10 };
     component.addToCart(product);
+
     expect(mockData.dispatch).toHaveBeenCalledWith(
       new AddToCart({
         productId: product.id,
@@ -98,32 +92,23 @@ describe('ProductListComponent', () => {
     );
   });
 
-  it('should check if product is in cart', () => {
-    const inCart = component.isInCart(1);
-    expect(inCart).toBeTrue();
-
-    const notInCart = component.isInCart(3);
-    expect(notInCart).toBeFalse();
+  it('should dispatch IncrementQuantity action when incrementQuantity called', () => {
+    component.incrementQuantity(1);
+    expect(mockData.dispatch).toHaveBeenCalledWith(new IncrementQuantity(1));
   });
 
-  it('should not allow adding out of stock products to cart', () => {
-    const outOfStockProductItem = {
-      id: 3,
-      name: 'Tablet',
-      price: 500,
-      stock: 0,
-    };
-    component.addToCart(outOfStockProductItem);
-    expect(mockData.dispatch).not.toHaveBeenCalled();
+  it('should dispatch DecrementQuantity action when decrementQuantity called', () => {
+    component.decrementQuantity(1);
+    expect(mockData.dispatch).toHaveBeenCalledWith(new DecrementQuantity(1));
   });
 
-  it('should show products in the DOM', () => {
-    component.ngOnInit();
+  it('should show combined products in the DOM', () => {
     fixture.detectChanges();
-    const elements = fixture.nativeElement as HTMLElement;
-    const productRef = elements.querySelectorAll('.product-name');
-    expect(productRef.length).toBe(2);
-    expect(productRef[0].textContent).toContain('Laptop');
-    expect(productRef[1].textContent).toContain('Mouse');
+    const compiled = fixture.nativeElement as HTMLElement;
+    const productElements = compiled.querySelectorAll('.product-name');
+
+    expect(productElements.length).toBe(2);
+    expect(productElements[0].textContent).toContain('Laptop');
+    expect(productElements[1].textContent).toContain('Mouse');
   });
 });

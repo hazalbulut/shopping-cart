@@ -1,14 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { NgxsModule, Store } from '@ngxs/store';
+import { CartState } from './cart.state';
+import { ICartItem } from '../../models/cart-item.interface';
 import {
-  CartState,
   AddToCart,
-  RemoveFromCart,
-  IncrementQuantity,
   DecrementQuantity,
-} from './cart.state';
-import { ICartItem } from '../models/cart-item.interface';
-import { ICartState } from '../models/cart-state.interface';
+  IncrementQuantity,
+  RemoveFromCart,
+} from './cart.actions';
 
 describe('CartState', () => {
   let store: Store;

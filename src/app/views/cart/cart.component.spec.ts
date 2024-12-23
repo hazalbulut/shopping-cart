@@ -1,6 +1,6 @@
 import { of, Subject, takeUntil } from 'rxjs';
-import { CartState } from '../../state/cart.state';
-import { ProductState } from '../../state/product.state';
+import { CartState } from '../../state/cart/cart.state';
+import { ProductState } from '../../state/product/product.state';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { CartComponent } from './cart.component';
 import { CardCartItemComponent } from '../../components/card-cart-item/card-cart-item.component';

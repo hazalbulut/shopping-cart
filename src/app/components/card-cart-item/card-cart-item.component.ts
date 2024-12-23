@@ -1,49 +1,41 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { ICartItem } from '../../models/cart-item.interface';
 import { Store } from '@ngxs/store';
+import { ProductState } from '../../state/product/product.state';
 import {
-  CartState,
   DecrementQuantity,
   IncrementQuantity,
   RemoveFromCart,
-} from '../../state/cart.state';
-import { ProductState } from '../../state/product.state';
+} from '../../state/cart/cart.actions';
+import { IProduct } from '../../models/product.interface';
 @Component({
   selector: 'app-card-cart-item',
   standalone: true,
   templateUrl: './card-cart-item.component.html',
   styleUrl: './card-cart-item.component.scss',
 })
-export class CardCartItemComponent {
-  @Input() item!: ICartItem;
+export class CardCartItemComponent implements OnInit {
+  @Input() public item!: ICartItem;
+  public selectedProduct!: IProduct;
+
   private readonly store = inject(Store);
 
-  incrementQuantity(productId: number) {
-    this.store.dispatch(new IncrementQuantity(productId));
-  }
-
-  decrementQuantity(productId: number) {
-    this.store.dispatch(new DecrementQuantity(productId));
-  }
-
-  removeFromCart(productId: number) {
-    this.store.dispatch(new RemoveFromCart(productId));
-    alert(`Ürün sepetten çıkarıldı.`);
-  }
-
-  getProductQuantity(productId: number): number {
-    const cartItems = this.store.selectSnapshot(CartState.getCartItems);
-    const item = cartItems.find((item) => item.productId === productId);
-    return item ? item.quantity : 0;
-  }
-
-  isStockAvailable(cartItem: ICartItem): boolean {
-    const selectedProduct = this.store
+  ngOnInit(): void {
+    this.selectedProduct = this.store
       .selectSnapshot(ProductState.getProducts)
-      .find((el) => el.id === cartItem.productId);
-    if (selectedProduct && cartItem) {
-      return cartItem.quantity < selectedProduct.stock;
-    }
-    return true;
+      .find((el) => el.id === this.item.productId) as IProduct;
+  }
+
+  incrementQuantity() {
+    this.store.dispatch(new IncrementQuantity(this.item.productId));
+  }
+
+  decrementQuantity() {
+    this.store.dispatch(new DecrementQuantity(this.item.productId));
+  }
+
+  removeFromCart() {
+    this.store.dispatch(new RemoveFromCart(this.item.productId));
+    alert(`Ürün sepetten çıkarıldı.`);
   }
 }
