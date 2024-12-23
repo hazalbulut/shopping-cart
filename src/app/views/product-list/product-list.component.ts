@@ -28,6 +28,9 @@ export class ProductListComponent implements OnInit {
   }
 
   addToCart(product: any) {
+    if (product.stock <= 0) {
+      return;
+    }
     this.store.dispatch(
       new AddToCart({
         productId: product.id,
@@ -48,7 +51,7 @@ export class ProductListComponent implements OnInit {
 
   isInCart(productId: number): boolean {
     const cartItems = this.store.selectSnapshot(CartState.getCartItems);
-    return !!cartItems.find((item) => item.productId === productId);
+    return !!cartItems?.find((item) => item.productId === productId);
   }
 
   getProductQuantity(productId: number): number {

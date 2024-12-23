@@ -10,7 +10,7 @@ export class AddToCart {
 
 export class RemoveFromCart {
   static readonly type = '[Cart] Remove';
-  constructor(public payload: number) {} // productId
+  constructor(public payload: number) {}
 }
 
 export class IncrementQuantity {
@@ -112,7 +112,7 @@ export class CartState {
             ? { ...item, quantity: item.quantity - 1 }
             : item
         )
-        .filter((item) => item.quantity > 0), // Eğer miktar 0 olursa ürünü sepetten kaldır
+        .filter((item) => item.quantity > 0),
     });
   }
 }
