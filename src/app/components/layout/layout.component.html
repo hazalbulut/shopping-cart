@@ -27,9 +27,9 @@
         <div>{{ total$ | async }} TL</div>
       </div>
       <div *ngIf="totalCount$ | async as totalCount" class="cart-count-badge">
-        <div *ngIf="totalCount > 0">
-          {{ totalCount }}
-        </div>
+        @if(totalCount > 0) {
+        <div>{{ totalCount }}</div>
+        }
       </div>
     </a>
     @if(showCartSummaryBox) {
